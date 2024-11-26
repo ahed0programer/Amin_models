@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3D Model Viewer with Materials</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 100;
+    }
+    button {
+      margin: 5px;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <button id="orbitMode">Orbit Controls</button>
+    <button id="fpsMode">FPS Controls</button>
+  </div>
+
+  <!-- Three.js Library -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.125.0/build/three.min.js"></script>
+  
+  <!-- Controls and Loaders -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.125.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.125.0/examples/js/controls/PointerLockControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.125.0/examples/js/loaders/MTLLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.125.0/examples/js/loaders/OBJLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js"></script>  
+  <script src="https://cdn.jsdelivr.net/npm/three@0.125.0/examples/js/loaders/FBXLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.124/examples/js/loaders/RGBELoader.js"></script>
+
+  <!-- <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r92/examples/js/loaders/GLTFLoader.js"></script> -->
+
+
+  <script>
+    // Scene, Camera, Renderer
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      75, window.innerWidth / window.innerHeight, 0.1, 10000
+    );
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(10, 10, 10);
+    scene.add(ambientLight, directionalLight);
+
+    // Load HDRI texture (ensure to use a valid HDRI image URL)
+    const hdrLoader = new THREE.RGBELoader();
+    hdrLoader.load('goegap_road_1k.hdr', (texture) => {
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+      scene.background = texture;  // Set the HDRI as the background
+      scene.environment = texture; // Set it as the environment for reflections
+    });
+
+    // Controls
+    const orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+    camera.position.set(0, 2, 5);
+    orbitControls.update();
+
+    const pointerLockControls = new THREE.PointerLockControls(camera, document.body);
+
+    // UI Buttons for Switching Controls
+    document.getElementById('orbitMode').addEventListener('click', () => {
+      pointerLockControls.unlock();
+      orbitControls.enabled = true;
+      renderer.domElement.style.cursor = 'default';
+    });
+
+    document.getElementById('fpsMode').addEventListener('click', () => {
+      pointerLockControls.lock();
+      orbitControls.enabled = false;
+      renderer.domElement.style.cursor = 'none';
+    });
+
+    // Load a GLTF model
+    // const loader = new THREE.GLTFLoader();
+    // loader.load('glp/suleman terrain.glb', (gltf) => {
+    //   scene.add(gltf.scene);  // Add the loaded model to the scene
+    // });
+
+
+    // const loader = new THREE.FBXLoader();
+    //     // loader.setPath('fbx/textures/');
+    //     loader.load('building/building_04.fbx', (object) => {
+    //     scene.add(object);
+    // });
+
+    // Loading Materials and OBJ Model
+    const mtlLoader = new THREE.MTLLoader();
+    mtlLoader.setPath(); // Set the path to your .mtl file
+    mtlLoader.load('building/building_04.mtl', (materials) => {
+      materials.preload();
+
+      const objLoader = new THREE.OBJLoader();
+      objLoader.setMaterials(materials);
+      objLoader.setPath(); // Set the path to your .obj file
+      objLoader.load(
+        'building/building_04.obj',
+        (object) => {
+          scene.add(object);
+        },
+        (xhr) => {
+          console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+        },
+        (error) => {
+          console.error('An error happened', error);
+        }
+      );
+    });
+
+    // Animate and Render Loop
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      // Update controls
+      if (orbitControls.enabled) {
+        orbitControls.update();
+      }
+
+      // PointerLockControls movement logic can be added here
+      // Example: Update camera position based on input
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Handle Window Resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Pointer Lock Change Events (optional for better UX)
+    pointerLockControls.addEventListener('lock', () => {
+      console.log('Pointer Locked');
+    });
+
+    pointerLockControls.addEventListener('unlock', () => {
+      console.log('Pointer Unlocked');
+    });
+  </script>
+</body>
+</html>
