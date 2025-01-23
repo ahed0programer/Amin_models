@@ -35,6 +35,7 @@
   <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.min.js"></script>  
   <script src="https://cdn.jsdelivr.net/npm/three@0.125.0/examples/js/loaders/FBXLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.124/examples/js/loaders/RGBELoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.125.0/examples/js/loaders/TDSLoader.js"></script>
 
   <!-- <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r92/examples/js/loaders/GLTFLoader.js"></script> -->
 
@@ -92,32 +93,58 @@
 
     // const loader = new THREE.FBXLoader();
     //     // loader.setPath('fbx/textures/');
-    //     loader.load('building/building_04.fbx', (object) => {
+    //     loader.load('home/test.fbx', (object) => {
     //     scene.add(object);
     // });
 
     // Loading Materials and OBJ Model
-    const mtlLoader = new THREE.MTLLoader();
-    mtlLoader.setPath(); // Set the path to your .mtl file
-    mtlLoader.load('building/building_04.mtl', (materials) => {
-      materials.preload();
+    // const mtlLoader = new THREE.MTLLoader();
+    // mtlLoader.setPath(); // Set the path to your .mtl file
+    // mtlLoader.load('obj/suleman terrain.mtl', (materials) => {
+    //   materials.preload();
 
-      const objLoader = new THREE.OBJLoader();
-      objLoader.setMaterials(materials);
-      objLoader.setPath(); // Set the path to your .obj file
-      objLoader.load(
-        'building/building_04.obj',
-        (object) => {
-          scene.add(object);
-        },
-        (xhr) => {
-          console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
-        },
-        (error) => {
-          console.error('An error happened', error);
-        }
-      );
-    });
+    //   const objLoader = new THREE.OBJLoader();
+    //   objLoader.setMaterials(materials);
+    //   objLoader.setPath(); // Set the path to your .obj file
+    //   objLoader.load(
+    //     'obj/suleman terrain.obj',
+    //     (object) => {
+    //       object.scale(-10,-10,-10)
+    //       scene.add(object);
+    //     },
+    //     (xhr) => {
+    //       console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+    //     },
+    //     (error) => {
+    //       console.error('An error happened', error);
+    //     }
+    //   );
+    // });
+
+
+    // Loading the 3DS model
+    const tdsLoader = new THREE.TDSLoader();
+    // tdsLoader.setPath('path/to/your/3ds/files/'); // Set the path to your 3ds file
+
+    tdsLoader.load(
+      '2023_321_APD 04_AC27.3ds',
+      (object) => {
+        // Rotate the model (rotation values are in radians)
+        object.rotation.x = -Math.PI / 2; // Rotate 90 degrees on the X-axis
+        object.rotation.y = 0; // Rotate 45 degrees on the Y-axis
+        object.rotation.z = 0;          // No rotation on the Z-axis
+
+        // Add the object to the scene
+        scene.add(object);
+        console.log('3DS model loaded successfully');
+      },
+      (xhr) => {
+        console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+      },
+      (error) => {
+        console.error('An error happened while loading the 3DS model', error);
+      }
+    );
 
     // Animate and Render Loop
     function animate() {
